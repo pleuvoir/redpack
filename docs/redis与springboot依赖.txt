@@ -1,0 +1,29 @@
+
+OK
+spring-boot-starter-parent 2.1.0.R
+spring-boot-data-redis 2.1.0.R
+  spring-data-redis 2.1.2.R
+jedis 2.9.0
+spring-integration-redis 5.1.1.R
+  spring-data-redis 2.1.2.R managed from 2.1.3.R
+
+
+OK
+spring-boot-starter-parent 2.1.0.R
+spring-boot-data-redis 2.1.0.R
+  spring-data-redis 2.1.2.R
+jedis 2.9.0
+spring-integration-redis 5.1.0.R
+  spring-data-redis 2.1.2.R
+
+
+ERROR
+spring-boot-starter-parent 2.2.1.R
+spring-boot-data-redis 2.2.1.R
+  spring-data-redis 2.2.1.R
+jedis 3.1.0
+spring-integration-redis 5.2.1.R
+  spring-data-redis 2.1.1.R 
+
+
+ERR unknown command 'UNLINK';
