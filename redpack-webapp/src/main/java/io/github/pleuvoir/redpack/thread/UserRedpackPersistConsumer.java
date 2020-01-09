@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.BoundListOperations;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -26,7 +27,7 @@ import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 用户抢到红包后进行持久化操作
+ * 用户抢到红包后进行异步持久化操作
  *
  * @author <a href="mailto:fuwei@daojia-inc.com">pleuvoir</a>
  */
@@ -62,17 +63,17 @@ public class UserRedpackPersistConsumer {
     }
 
 
-    private void persist() {
-        BoundListOperations<String, RedpackPersistDTO> listOps = persistRedisTemplate.boundListOps(Const.REDIS_PERSIST_QUEUE_NAME);
+    protected void persist() {
+
+        ListOperations<String, RedpackPersistDTO> listOps = this.persistRedisTemplate.opsForList();
 
         while (!Thread.currentThread().isInterrupted()) {
-            RedpackPersistDTO persistDTO = listOps.rightPop();
+
+            // BRPOPLPUSH
+            RedpackPersistDTO persistDTO = listOps.rightPopAndLeftPush(Const.REDIS_PERSIST_QUEUE_NAME,
+                    Const.REDIS_PERSIST_QUEUE_NAME_BAK, 3, TimeUnit.SECONDS);
 
             if (persistDTO == null) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(20);
-                } catch (InterruptedException ignore) {
-                }
                 continue;
             }
 
@@ -89,13 +90,17 @@ public class UserRedpackPersistConsumer {
                 redpackPO.setStatus(RedpackPO.DISABLE);
                 redpackDao.updateById(redpackPO);
                 RedpackDetailPO detailPO = new RedpackDetailPO();
+                detailPO.setId(persistDTO.getId());
                 detailPO.setAmount(redpackPO.getAmount());
                 detailPO.setRedpackId(redpackPO.getActivityId());
                 detailPO.setUserId(persistDTO.getUserId());
                 detailPO.setCreateTime(persistDTO.getCreateTime());
                 detailDao.insert(detailPO);
                 txManager.commit(txStatus);
+                log.info("待入库红包已入库，{}", JSON.toJSONString(persistDTO));
             } catch (Throwable e) {
+                //记录失败日志，方便排查原因
+                AsyncPersistLogger.save("FAIL", "saveRedisRedpackPersistDTO", JSON.toJSONString(persistDTO));
                 txManager.rollback(txStatus);
                 log.error("异步持久化错误，", e);
             }

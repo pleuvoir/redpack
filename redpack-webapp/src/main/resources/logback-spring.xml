@@ -16,6 +16,26 @@
         </encoder>
     </appender>
 
+    <!-- 异步持久化日志 -->
+    <appender name="PERSIST_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}.persist.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>${LOG_HOME}/${APP_NAME}.persist.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-5level | %d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+    </appender>
+
     <!-- 打印普通级别 -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 文件路径 -->
@@ -59,5 +79,11 @@
             <appender-ref ref="INFO_FILE" />
         </root>
     </springProfile>
+
+
+    <!-- 异步持久化日志 -->
+    <logger name="asyncPersistLogger" level="INFO">
+        <appender-ref ref="PERSIST_FILE" />
+    </logger>
 
 </configuration>

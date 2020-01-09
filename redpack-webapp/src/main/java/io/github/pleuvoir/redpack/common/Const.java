@@ -18,4 +18,9 @@ public class Const {
      * 抢到红包后异步持久化队列
      */
     public static final String REDIS_PERSIST_QUEUE_NAME = "Redpack:persistQueues:";
+
+    /**
+     * 抢到红包后异步持久化备份队列
+     */
+    public static final String REDIS_PERSIST_QUEUE_NAME_BAK = "Redpack:persistQueues:bak:";
 }

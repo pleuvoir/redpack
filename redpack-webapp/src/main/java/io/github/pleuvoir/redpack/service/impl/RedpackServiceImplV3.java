@@ -87,7 +87,7 @@ public class RedpackServiceImplV3 implements IRedpackService {
         AssertUtil.assertOne(row, "更新红包活动失败");
 
         RedpackPO redpackPO = new RedpackPO();
-        Long id = System.currentTimeMillis();
+        Long id = IdUtils.nextId();
         redpackPO.setId(id);
         redpackPO.setAmount(amount);
         redpackPO.setActivityId(activityPO.getId());

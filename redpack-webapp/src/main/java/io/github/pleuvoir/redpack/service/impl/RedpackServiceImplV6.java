@@ -19,11 +19,14 @@ import io.github.pleuvoir.redpack.service.IRedpackService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Resource;
@@ -53,6 +56,7 @@ public class RedpackServiceImplV6 implements IRedpackService {
     private RedisTemplate<String, RedpackPersistDTO> persistRedisTemplate;
 
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Throwable.class)
     @Override
     public CreateActivityResultDTO create(CreateActivityDTO dto) {
         RedpackActivityPO redpackActivityPO = new RedpackActivityPO();
@@ -95,7 +99,6 @@ public class RedpackServiceImplV6 implements IRedpackService {
 
         String queueKey = Const.REDIS_QUEUE_NAME.concat(activityId.toString());
 
-        //阻塞操作
         RedpackPO po = this.redisTemplate.opsForList().leftPop(queueKey);
         if (po == null) {
             return false;
@@ -108,9 +111,8 @@ public class RedpackServiceImplV6 implements IRedpackService {
         persistDTO.setUserId(dto.getUserId());
         persistDTO.setCreateTime(LocalDateTime.now());
 
-
         //异步入库
-        this.persistRedisTemplate.boundListOps(Const.REDIS_PERSIST_QUEUE_NAME).leftPush(persistDTO);
+        this.persistRedisTemplate.opsForList().rightPush(Const.REDIS_PERSIST_QUEUE_NAME, persistDTO);
 
         return true;
     }

@@ -12,6 +12,14 @@ import org.springframework.stereotype.Component;
 @Data
 public class AppConfig {
 
+    /**
+     * 是否开启异步持久化数据
+     */
     private boolean persist;
+
+    /**
+     * 崩溃恢复检测间隔，单位秒
+     */
+    private Integer crashRecoveryInteval;
 
 }

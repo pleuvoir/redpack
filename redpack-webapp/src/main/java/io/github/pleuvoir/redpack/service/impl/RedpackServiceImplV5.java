@@ -12,6 +12,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.google.common.collect.Lists;
@@ -52,6 +54,7 @@ public class RedpackServiceImplV5 implements IRedpackService {
     @Autowired
     private RedisTemplate<String, RedpackPO> redisTemplate;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Throwable.class)
     @Override
     public CreateActivityResultDTO create(CreateActivityDTO dto) {
         RedpackActivityPO redpackActivityPO = new RedpackActivityPO();
@@ -94,7 +97,6 @@ public class RedpackServiceImplV5 implements IRedpackService {
 
         String queueKey = Const.REDIS_QUEUE_NAME.concat(activityId.toString());
 
-        //阻塞操作
         RedpackPO po = this.redisTemplate.opsForList().leftPop(queueKey);
         if (po == null) {
             return false;

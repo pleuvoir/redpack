@@ -12,6 +12,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.CollectionUtils;
 
@@ -52,6 +54,7 @@ public class RedpackServiceImplV4 implements IRedpackService {
     @Resource(name = "transactionManager")
     private DataSourceTransactionManager txManager;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Throwable.class)
     @Override
     public CreateActivityResultDTO create(CreateActivityDTO dto) {
         RedpackActivityPO redpackActivityPO = new RedpackActivityPO();
