@@ -26,7 +26,7 @@
         <jedis.version>3.1.0</jedis.version>
         <junit.version>4.12</junit.version>
         <uuid.version>3.1.5</uuid.version>
-        <io.version>2.6</io.version>
+        <io.version>2.7</io.version>
     </properties>
 
     <dependencies>
